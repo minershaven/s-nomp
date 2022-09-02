@@ -249,21 +249,21 @@ function SetupForPool(logger, poolOptions, setupFinished){
         if (callback === true)
             return;
         if (tBalance === NaN) {
-            logger.error(logSystem, logComponent, 'tBalance === NaN for sendTToZ');
+            logger.error(logSystem, logComponent, 'tBalance === NaN for shieldcoinbase');
             return;
         }
         if ((tBalance - 10000) <= 0)
             return;
 
-        // do not allow more than a single z_sendmany operation at a time
+        // do not allow more than a single z_shieldcoinbase operation at a time
         if (opidCount > 0) {
-            logger.warning(logSystem, logComponent, 'sendTToZ is waiting, too many z_sendmany operations already in progress.');
+            logger.warning(logSystem, logComponent, 'shieldcoinbase is waiting, too many operations already in progress.');
             return;
         }
 
         var amount = satoshisToCoins(tBalance - 10000);
-        var params = [poolOptions.address, [{'address': poolOptions.zAddress, 'amount': amount}]];
-        daemon.cmd('z_sendmany', params,
+        var params = [poolOptions.address, poolOptions.zAddress];
+        daemon.cmd('z_shieldcoinbase', params,
             function (result) {
                 //Check if payments failed because wallet doesn't have enough coins to pay for tx fees
                 if (!result || result.error || result[0].error || !result[0].response) {
@@ -275,7 +275,7 @@ function SetupForPool(logger, poolOptions, setupFinished){
                     var opid = (result.response || result[0].response);
                     opidCount++;
                     opids.push(opid);
-                    logger.special(logSystem, logComponent, 'Shield balance ' + amount + ' ' + opid);
+                    logger.special(logSystem, logComponent, 'Shielding balance ' + amount);
                     callback = function (){};
                     callback(null);
                 }
@@ -491,6 +491,9 @@ function SetupForPool(logger, poolOptions, setupFinished){
                         logger.special(logSystem, logComponent, 'Shielding operation in progress ' + op.id );
                     }
                 });
+                /* Clear stuck operations*/
+                logger.special(logSystem, logComponent, "Running z_operationresult to clear finished operations");
+                batchRPC.push(['z_getoperationresult']);
                 // if there are no completed operations
                 if (batchRPC.length <= 0) {
                     opidTimeout = setTimeout(checkOpids, opid_interval);
@@ -791,6 +794,19 @@ function SetupForPool(logger, poolOptions, setupFinished){
 
                         // get transaction category for round
                         round.category = generationTx.category
+
+                        //Pay before daemon considers mature
+                        if (typeof poolOptions.coin.poolOptions.confirmations === 'undefined') {
+                            poolOptions.coin.poolOptions.confirmations = 100;
+                        }
+
+                        if (round.confirmations >= poolOptions.coin.poolOptions.confirmations) {
+                            round.category = 'generate';
+                        } else if (round.confirmations <= poolOptions.coin.poolOptions.confirmations) {
+                            round.category = 'immature';
+                        } else {
+                            round.category;
+                        }
 
                         // get reward for newly generated blocks
                         if (round.category === 'generate' || round.category === 'immature') {
