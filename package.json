@@ -33,8 +33,8 @@
         "url": "https://github.com/s-nomp/s-nomp.git"
     },
     "dependencies": {
-        "async": "^2.6.1",
-        "bignum": "^0.13.0",
+        "async": "*",
+        "bignum": "^0.13.1",
         "body-parser": "^1.18.3",
         "colors": "^1.3.1",
         "compression": "^1.7.3",
@@ -44,11 +44,11 @@
         "extend": "^3.0.2",
         "mysql": "^2.16.0",
         "node-json-minify": "^1.0.0",
-        "node-watch": "^0.5.8",
+        "node-watch": "*",
         "nonce": "^1.0.4",
         "redis": "^2.8.0",
-        "request": "^2.88.0",
-        "stratum-pool": "git+https://github.com/s-nomp/node-stratum-pool.git"
+        "request": "*",
+        "stratum-pool": "https://github.com/tiltpool/node-stratum-pool.git"
     },
     "engines": {
         "node": ">=8.11"
