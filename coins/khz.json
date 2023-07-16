@@ -1,0 +1,14 @@
+{
+    "name": "kohezion",
+    "symbol": "khz",
+    "algorithm": "equihash",
+    "txfee": 0.00005,
+    "explorer": {
+        "txURL": "",
+        "blockURL": "",
+        "_comment_explorer": ""
+    },
+    "poolOptions": {
+        "confirmations": 30
+    }
+}
